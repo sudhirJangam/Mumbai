@@ -102,7 +102,8 @@ def Parse_data(Train):
         df_final.to_csv(r'c:\tmp\pandas.txt', header=None, index=None, sep=' ', mode='a')
         df_final = df_final.sort_values(['SYMBOL', 'TIMESTAMP'], ascending=[True, True]).reset_index()
 
-        df_final = df_final.iloc[-80:,:]
+        df_final = df_final.iloc[-20:,:]
+        print(df_final)
         """
         df_plot = df_final[(df_final["SYMBOL"] == "ITC")]
         df_plot = df_plot[["TIMESTAMP", "EMA20", "EMA50", "EMA20_30M",
@@ -220,10 +221,10 @@ def Parse_data(Train):
                 F15 = np.array(Data_ratio["SLOP_2_UP"])
                 F16 = np.array(Data_ratio["SLOP_2_DN"])
 
-                #F9 = np.array(Data_ratio["LONG_SLOP1"])
-                #F14 = np.array(Data_ratio["LONG_SLOP2"])
-                #F15 = np.array(Data_ratio["MID_SLOP1"])
-                #F16 = np.array(Data_ratio["MID_SLOP2"])
+                F9 = np.array(Data_ratio["LONG_SLOP1"])
+                F14 = np.array(Data_ratio["LONG_SLOP2"])
+                F15 = np.array(Data_ratio["MID_SLOP1"])
+                F16 = np.array(Data_ratio["MID_SLOP2"])
                 FC = np.array(Data_ratio["SHORT_SLOP1"])
                 FD = np.array(Data_ratio["SHORT_SLOP2"])
                 #F9 = np.array(Data_ratio["EMA20"])
@@ -253,8 +254,19 @@ def Parse_data(Train):
                 #F7 = np.array(Data["LOW"])
                 #F8 = np.array(Data["CLOSE"])
 
-                #F11 = np.array(Data["EMA12_SLOP1"])
-                #F12 = np.array(Data["EMA26_SLOP1"])
+                F11 = np.array(Data_ratio["EMA12_SLOP1"])
+                F12 = np.array(Data_ratio["EMA12_SLOP2"])
+                F13 = np.array(Data_ratio["EMA26_SLOP1"])
+                F14 = np.array(Data_ratio["EMA26_SLOP2"])
+                F15 = np.array(Data_ratio["EMA50_SLOP1_30M"])
+                F16 = np.array(Data_ratio["EMA50_SLOP2_30M"])
+                F17 = np.array(Data_ratio["EMA20_SLOP1_30M"])
+                F18 = np.array(Data_ratio["EMA20_SLOP2_30M"])
+                F19 = np.array(Data_ratio["EMA20_SLOP1"])
+                F20 = np.array(Data_ratio["EMA20_SLOP2"])
+                F21 = np.array(Data_ratio["EMA50_SLOP1"])
+                F22 = np.array(Data_ratio["EMA50_SLOP2"])
+
 
                 yData=np.array(Data_ratio["CLOSE"])
                 #xData = np.array((Data["Macd"]))
@@ -262,30 +274,54 @@ def Parse_data(Train):
                 featuresize = len(Data["CLOSE"]) - (len(Data["CLOSE"])) % 20
                # Data_final =  pd.concat([Data_final, Data_ratio.iloc[5:,:]])
                 Data_final = pd.concat([Data_final, Data.iloc[0:featuresize, :]])
+                if Train:
+                      for i in range(0, featuresize-21):
+                             #tmpfeatures=[]
+                             #tmpoutput=[]
+                             #tmpoutputclass = []
+                             inset = []
+                             outset = []
+                             outclassset = []
+
+                             for j in range (0,20):
+                                  k=i+j
+                                  #fv = [F9[k], F14[k],F15[k], F16[k] ,FC[k],FD[k] ]
+                                  fv = [F11[k], F12[k],F13[k], F14[k] ,F15[k],F16[k],F17[k],F18[k],F19[k],F20[k],F21[k],F22[k] ]
+                                  inset.append(fv)
+                                  outset.append([yData[k + 1]])
+                                  OneHot = GetOneHot(yData[k + 1]*100, LableDict, ZeroVec)
+                                  outclassset.append(OneHot)
 
 
-                for i in range(0, featuresize):
-                        #tmpfeatures=[]
-                        #tmpoutput=[]
-                        #tmpoutputclass = []
 
-                        tup = [F9[i], F14[i],F15[i], F16[i] ,FC[i],FD[i] ]
-
-                        features.append(tup)
-                        if Train:
-                                output.append([yData[i + 1]])
-                                #output.append([F1[i+5]])
-                                OneHot = GetOneHot(yData[i + 1]*100, LableDict, ZeroVec)
-                        else:
-
-                                if(i==featuresize-1) :
-                                     output.append(0)
-                                else:
+                             features.append(inset)
+                             output.append(outset)
+                             outputclass.append(outclassset)
+                             """
+                             if Train:
                                      output.append([yData[i + 1]])
-                                #output.append([F1[i+5]])
+                                     #output.append([F1[i+5]])
                                      OneHot = GetOneHot(yData[i + 1]*100, LableDict, ZeroVec)
+                             else:
 
-                        outputclass.append(OneHot)
+                                     if(i==featuresize-1) :
+                                          output.append(0)
+                                     else:
+                                          output.append([yData[i + 1]])
+                                     #output.append([F1[i+5]])
+                                          OneHot = GetOneHot(yData[i + 1]*100, LableDict, ZeroVec)
+
+                             outputclass.append(OneHot)
+                             """
+                else:
+                      for k in range(0,20) :
+                             fv = [F9[k], F14[k],F15[k], F16[k] ,FC[k],FD[k] ]
+                             fv = [F11[k], F12[k],F13[k], F14[k] ,F15[k],F16[k],F17[k],F18[k],F19[k],F20[k],F21[k],F22[k] ]
+                             features.append(fv)
+                             output.append([yData[k]])
+                             OneHot = GetOneHot(yData[k]*100, LableDict, ZeroVec)
+                             outputclass.append(OneHot)
+
 
                 #features.append(tmpfeatures[(len(tmpfeatures)-len(tmpfeatures)%20)])
                 #output.append(tmpoutput[(len(tmpoutput) - len(tmpoutput) % 20)])
